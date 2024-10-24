@@ -3,6 +3,7 @@ from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassific
 import torch
 from datetime import time
 import matplotlib.pyplot as plt
+import time as tm  
 
 # Load the trained model and tokenizer
 model = DistilBertForSequenceClassification.from_pretrained('./my_saved_model')
@@ -11,10 +12,10 @@ tokenizer = DistilBertTokenizerFast.from_pretrained('./my_saved_model')
 # Label encoder to map class IDs back to class names (crime descriptions)
 crime_classes = ['BATTERY - SIMPLE ASSAULT', 'BURGLARY', 'BURGLARY FROM VEHICLE', 'THEFT PLAIN - PETTY ($950 & UNDER)', 'VEHICLE - STOLEN']
 
-# Streamlit page configuration with theme changes
+
 st.set_page_config(page_title="Crime Class Predictor", page_icon="🚨", layout="centered")
 
-# Custom CSS for a red theme with better visibility for headers
+# Custom CSS 
 st.markdown("""
     <style>
     body {
@@ -56,9 +57,9 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Sidebar for branding and about information
+# Sidebar 
 with st.sidebar:
-    st.image("https://img.icons8.com/?size=100&id=efW10Mdj2uRb&format=png&color=000000", width=150)  # Replace with your logo URL
+    st.image("https://img.icons8.com/?size=100&id=efW10Mdj2uRb&format=png&color=000000", width=150)  
     st.title("Crime Class Predictor")
     st.markdown("This app predicts the probability of different crime classes based on the provided area code, time, and day of the week.")
     st.markdown("### About")
@@ -68,31 +69,37 @@ with st.sidebar:
 st.header("Predict the Crime Class")
 st.write("Enter the required details below to get the crime class probabilities:")
 
-# Input layout in columns
+# Input layout in columns with tooltips
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    area = st.number_input("Enter Area Code", min_value=1, max_value=22, step=1)
+    area = st.number_input("Enter Area Code", min_value=1, max_value=22, step=1, help="Area codes represent different geographical regions.")
     
 with col2:
-    selected_time = st.time_input("Select the Time", value=time(12, 0))
+    selected_time = st.time_input("Select the Time", value=time(12, 0), help="Select the time to analyze crime probabilities at that hour.")
     
 with col3:
-    day_of_week = st.selectbox("Select the Day", ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
+    day_of_week = st.selectbox("Select the Day", ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], help="Select the day to analyze crime probabilities on that day.")
 
-# Display separator for better visuals
+
 st.markdown("---")
 
 # Combine input features into a single string as required by the model
 combined_features = f"Area: {area} Hour: {selected_time} DayOfWeek: {day_of_week}"
 
-# Button for predictions
+# Button 
 if st.button('Predict Crime Class'):
-    with st.spinner("Analyzing data and predicting..."):
-        # Tokenize the input
+    with st.spinner("Predicting..."):
+        # Simulate a progress bar during predictions
+        progress = st.progress(0)
+        for i in range(100):
+            progress.progress(i + 1)
+            tm.sleep(0.01)  
+
+       
         inputs = tokenizer(combined_features, return_tensors="pt", truncation=True, padding=True)
 
-        # Get model predictions
+        
         with torch.no_grad():
             outputs = model(**inputs)
 
@@ -103,7 +110,7 @@ if st.button('Predict Crime Class'):
     st.success("Prediction Complete!")
     st.write("### Crime Class Probabilities:")
 
-    # Create a bar chart using Matplotlib with dark background and visible labels
+    # Create a bar chart using Matplotlib 
     fig, ax = plt.subplots(figsize=(8, 5))
     crime_names = crime_classes
     probs = probabilities * 100  # Convert to percentages
@@ -115,24 +122,30 @@ if st.button('Predict Crime Class'):
         ax.text(width + 1, bar.get_y() + bar.get_height()/2, f'{width:.2f}%', va='center', fontsize=12, color='#ffffff')
 
     # Set chart background and text colors
-    fig.patch.set_facecolor('#1b1b1b')  # Dark background for the figure
-    ax.set_facecolor('#1b1b1b')         # Dark background for the chart area
+    fig.patch.set_facecolor('#1b1b1b')  
+    ax.set_facecolor('#1b1b1b')         
     ax.set_xlabel('Probability (%)', fontsize=14, color='#ffffff')
     ax.set_title('Crime Class Prediction Probabilities', fontsize=16, color='#ff4b4b')
-    
-    # Ensure category labels are also white and easy to read
     ax.tick_params(axis='y', colors='#ffffff', labelsize=12)
-    ax.tick_params(axis='x', colors='#ffffff')  # Set x-tick colors to white for better contrast
+    ax.tick_params(axis='x', colors='#ffffff')  
 
     plt.xlim([0, 100])
 
     # Display the chart in Streamlit
     st.pyplot(fig)
 
+    # Compact summary with Success/Warning Indicators
+    max_prob = probabilities.max() * 100
+    max_crime_class = crime_classes[probabilities.argmax()]
+    
+    st.subheader("Summary")
+    if max_prob > 30:
+        st.warning(f"High likelihood of {max_crime_class}: {max_prob:.2f}% probability.")
+    else:
+        st.success(f"Low likelihood of crime: Highest is {max_crime_class} at {max_prob:.2f}%.")
+
     # Safety Tips based on the crime class with the highest probability
     st.subheader("Safety Tips")
-
-    max_crime_class = crime_classes[probabilities.argmax()]
 
     if max_crime_class == 'VEHICLE - STOLEN':
         st.write("🚗 **Tip:** Always park in well-lit areas, lock your car, and never leave valuables visible inside.")
@@ -144,6 +157,12 @@ if st.button('Predict Crime Class'):
         st.write("👮 **Tip:** Avoid isolated areas late at night. Always stay alert and keep your phone close.")
     elif max_crime_class == 'THEFT PLAIN - PETTY ($950 & UNDER)':
         st.write("💼 **Tip:** Keep an eye on your personal belongings in crowded areas. Secure your bags and wallets in public.")
+
+# Clear button to reset input fields
+if st.button("Clear All Inputs"):
+    st.session_state['area'] = 1  
+    st.session_state['selected_time'] = None
+    st.session_state['day_of_week'] = 'Sunday'
 
 # Footer
 st.markdown("""
