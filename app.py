@@ -139,7 +139,7 @@ if st.button('Predict Crime Class'):
     max_crime_class = crime_classes[probabilities.argmax()]
     
     st.subheader("Summary")
-    if max_prob > 30:
+    if max_prob > 40:
         st.warning(f"High likelihood of {max_crime_class}: {max_prob:.2f}% probability.")
     else:
         st.success(f"Low likelihood of crime: Highest is {max_crime_class} at {max_prob:.2f}%.")
