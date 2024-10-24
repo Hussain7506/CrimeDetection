@@ -63,7 +63,7 @@ with st.sidebar:
     st.title("Crime Class Predictor")
     st.markdown("This app predicts the probability of different crime classes based on the provided area code, time, and day of the week.")
     st.markdown("### About")
-    st.write("The model is trained on historical crime data and uses advanced NLP techniques to predict crime probabilities.")
+    st.write("The model is trained on historical crime data and uses advanced ML techniques to predict crime probabilities.")
 
 # Main application content
 st.header("Predict the Crime Class")
