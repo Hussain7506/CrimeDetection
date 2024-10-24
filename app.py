@@ -62,7 +62,7 @@ with st.sidebar:
     st.title("Crime Class Predictor")
     st.markdown("This app predicts the probability of different crime classes based on the provided area code, time, and day of the week.")
     st.markdown("### About")
-    st.write("The model is trained on historical crime data and uses advanced ML techniques to predict crime probabilities.")
+    st.write("The model is trained on historical crime data and uses advanced NLP techniques to predict crime probabilities.")
 
 # Main application content
 st.header("Predict the Crime Class")
@@ -128,6 +128,22 @@ if st.button('Predict Crime Class'):
 
     # Display the chart in Streamlit
     st.pyplot(fig)
+
+    # Safety Tips based on the crime class with the highest probability
+    st.subheader("Safety Tips")
+
+    max_crime_class = crime_classes[probabilities.argmax()]
+
+    if max_crime_class == 'VEHICLE - STOLEN':
+        st.write("🚗 **Tip:** Always park in well-lit areas, lock your car, and never leave valuables visible inside.")
+    elif max_crime_class == 'BURGLARY':
+        st.write("🏠 **Tip:** Ensure all doors and windows are locked. Consider installing a security system and motion-sensor lights.")
+    elif max_crime_class == 'BURGLARY FROM VEHICLE':
+        st.write("🚘 **Tip:** Never leave your car unlocked, and remove all valuable items when parking.")
+    elif max_crime_class == 'BATTERY - SIMPLE ASSAULT':
+        st.write("👮 **Tip:** Avoid isolated areas late at night. Always stay alert and keep your phone close.")
+    elif max_crime_class == 'THEFT PLAIN - PETTY ($950 & UNDER)':
+        st.write("💼 **Tip:** Keep an eye on your personal belongings in crowded areas. Secure your bags and wallets in public.")
 
 # Footer
 st.markdown("""
